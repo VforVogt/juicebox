@@ -1,17 +1,20 @@
-const PORT = 3000;
 const express = require("express");
 const server = express();
+const PORT = 3000;
+
+require("dotenv").config();
 
 const morgan = require("morgan");
 server.use(morgan("dev"));
+
 const { client } = require("./db");
 client.connect();
 
 server.use(express.json());
 
-server.listen(PORT, () => {
-  console.log("The server is up on port", PORT);
-});
+const apiRouter = require("./api");
+server.use("/api", apiRouter);
+
 server.use((req, res, next) => {
   console.log("<____Body Logger START____>");
   console.log(req.body);
@@ -19,5 +22,7 @@ server.use((req, res, next) => {
 
   next();
 });
-const apiRouter = require("./api");
-server.use("/api", apiRouter);
+
+server.listen(PORT, () => {
+  console.log("The server is up on port", PORT);
+});
