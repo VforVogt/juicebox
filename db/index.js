@@ -17,6 +17,7 @@ module.exports = {
   addTagsToPost,
   getPostsByTagName,
   getAllTags,
+  getPostById,
 };
 
 ///////////
@@ -141,9 +142,9 @@ async function createPost({ authorId, title, content, tags = [] }) {
       rows: [post],
     } = await client.query(
       `
-      insert into posts ("authorId", title, content)
-      values ($1, $2, $3)
-      returning *;
+      INSERT INTO posts("authorId", title, content) 
+      VALUES($1, $2, $3)
+      RETURNING *;
     `,
       [authorId, title, content]
     );
@@ -151,8 +152,8 @@ async function createPost({ authorId, title, content, tags = [] }) {
     const tagList = await createTags(tags);
 
     return await addTagsToPost(post.id, tagList);
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    throw error;
   }
 }
 
