@@ -35,6 +35,11 @@ apiRouter.use(async (req, res, next) => {
       if (id) {
         req.user = await getUserById(id);
         next();
+      } else {
+        next({
+          name: "AuthorizationError",
+          message: "Authorization token is malformed",
+        });
       }
     } catch ({ name, message }) {
       next({ name, message });
