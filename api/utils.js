@@ -1,3 +1,5 @@
+const req = require("express/lib/request");
+
 function requireUser(req, res, next) {
   if (!req.user) {
     next({

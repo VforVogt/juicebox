@@ -244,25 +244,28 @@ async function getPostById(postId) {
       rows: [post],
     } = await client.query(
       `
-      select * from posts
-      where id=$1
+      SELECT *
+      FROM posts
+      WHERE id=$1;
     `,
       [postId]
     );
 
-    // select the tags from a particular post
-    // by joining all tags in the tags table
-    // on all post_tags records in the post_tags through table
-    // IF -> WHERE post_tags record tagId matches the postId
-    // this allows to grab only the tags associated with a particular post
-    // since there's a many:many (many-to-many) relationship here
-    // we need to make sure that tags don't end up in an exclusive relationship with any given post
-    // otherwise they won't be useful to us as categories
+    // THIS IS NEW
+    if (!post) {
+      throw {
+        name: "PostNotFoundError",
+        message: "Could not find a post with that postId",
+      };
+    }
+    // NEWNESS ENDS HERE
+
     const { rows: tags } = await client.query(
       `
-      select tags.* from tags
-      join post_tags on tags.id=post_tags."tagId"
-      where post_tags."postId"=$1
+      SELECT tags.*
+      FROM tags
+      JOIN post_tags ON tags.id=post_tags."tagId"
+      WHERE post_tags."postId"=$1;
     `,
       [postId]
     );
@@ -271,8 +274,9 @@ async function getPostById(postId) {
       rows: [author],
     } = await client.query(
       `
-      select id, username, name, location from users
-      where id=$1
+      SELECT id, username, name, location
+      FROM users
+      WHERE id=$1;
     `,
       [post.authorId]
     );
@@ -280,16 +284,11 @@ async function getPostById(postId) {
     post.tags = tags;
     post.author = author;
 
-    // delete is a special keyword that completely removes a key (ie, a field)
-    // from an object
     delete post.authorId;
 
-    // before deleting: post = { ..., authorId: INT }
-    // after deleting, post = { ... }, authorId has been COMPLETELY REMOVED
-
     return post;
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    throw error;
   }
 }
 
