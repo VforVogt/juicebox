@@ -3,13 +3,23 @@ const postsRouter = express.Router();
 const { getAllPosts, createPost, getPostById, updatePost } = require("../db");
 const { requireUser } = require("./utils");
 
+module.exports = postsRouter;
+
+postsRouter.get("/", async (req, res) => {
+  const posts = await getAllPosts();
+
+  res.send({
+    posts,
+  });
+});
+
 //require a user to post, if user is set go next() if not send error message
 postsRouter.post("/", requireUser, async (req, res, next) => {
-  res.send({ message: "under construction" });
+  // res.send({ message: "under construction" }); ///---> WHY ARE THESE RES.SEND(S) CAUSING PROBLEMS FOR MY SEVER?
   const { title, content, tags = "" } = req.body;
 
   const tagArr = tags.trim().split(/\s+/);
-  const postData = {};
+  let postData = {};
 
   // only send the tags if there are some to send
   if (tagArr.length) {
@@ -27,8 +37,8 @@ postsRouter.post("/", requireUser, async (req, res, next) => {
       // otherwise, next an appropriate error object
     } else {
       next({
-        name: "Post Error",
-        message: "You Shall not Post!",
+        name: "Error",
+        message: "You failed!",
       });
     }
   } catch ({ name, message }) {
@@ -76,13 +86,3 @@ postsRouter.use((req, res, next) => {
 
   next(); // THIS IS DIFFERENT
 });
-
-postsRouter.get("/", async (req, res) => {
-  const posts = await getAllPosts();
-
-  res.send({
-    posts,
-  });
-});
-
-module.exports = postsRouter;
